@@ -1,0 +1,472 @@
+@use "@/style/var/index" as *;
+
+:root {
+  --console-ink: #1d2129;
+  --console-muted: #86909c;
+  --console-workspace: #f5f6f8;
+  --console-line: #e5e6eb;
+  --console-blue: #165dff;
+}
+
+body {
+  color: var(--console-ink);
+  background: var(--console-workspace);
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+
+.console-shell {
+  background: var(--console-workspace);
+
+  .layout-right {
+    min-width: 0;
+    background: var(--console-workspace);
+  }
+
+  .aside,
+  .aside.dark {
+    z-index: 2;
+    background: #ffffff;
+    border-right: 1px solid var(--console-line);
+    box-shadow: none;
+
+    .logo_head {
+      height: 60px;
+      border-right: 0;
+      border-bottom: 1px solid var(--console-line);
+      background: #ffffff;
+
+      .logo_box {
+        padding: 0 20px;
+      }
+
+      .logo_title,
+      .logo_title.dark {
+        color: var(--console-ink);
+        font-size: 18px;
+        font-weight: 650;
+        letter-spacing: 0;
+      }
+    }
+
+    .layout_side,
+    .arco-layout-sider,
+    .arco-menu {
+      background: #ffffff;
+      border: 0;
+    }
+
+    .arco-menu {
+      padding: 10px 12px;
+      color: #4e5969;
+    }
+
+    .arco-menu-item,
+    .arco-menu-pop-header {
+      min-height: 40px;
+      margin: 2px 0;
+      padding: 0 10px;
+      border-radius: 3px;
+      color: #4e5969;
+      background: transparent !important;
+      transition:
+        background 120ms ease,
+        color 120ms ease;
+    }
+
+    .arco-menu-item:hover,
+    .arco-menu-pop-header:hover {
+      color: var(--console-ink);
+      background: #f2f3f5 !important;
+      transform: none;
+    }
+
+    .arco-menu-selected {
+      color: var(--console-blue);
+      background: #e8f3ff !important;
+      box-shadow: inset 2px 0 0 var(--console-blue);
+    }
+
+    .arco-menu-icon {
+      color: currentcolor;
+      margin-right: 12px;
+    }
+
+    .arco-menu-inline-header {
+      color: #4e5969;
+    }
+  }
+
+  .header {
+    height: 60px;
+    padding: 0 20px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--console-line);
+    backdrop-filter: none;
+  }
+
+  .header_crumb {
+    gap: 10px;
+  }
+
+  .breadcrumb {
+    margin-left: 4px;
+
+    .arco-breadcrumb {
+      color: var(--console-muted);
+      font-size: 12px;
+    }
+
+    .main_button {
+      color: var(--console-ink);
+      font-weight: 500;
+    }
+
+    .route_button {
+      color: var(--console-muted);
+    }
+  }
+
+  .header_setting {
+    background: transparent;
+
+    > .icon_btn {
+      margin-left: 8px;
+      color: #4e5969;
+    }
+
+    .my_setting {
+      margin-left: 14px;
+      color: #4e5969;
+    }
+  }
+
+  .tabs {
+    display: none;
+  }
+
+  .layout-main-content {
+    min-height: 0;
+    background: var(--console-workspace);
+  }
+
+  .snow-page {
+    padding: 20px 24px 28px;
+    background: var(--console-workspace);
+  }
+
+  .snow-inner {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .snow-inner > .arco-form:first-of-type {
+    margin-bottom: 12px;
+    padding: 16px 16px 0;
+    border: 1px solid var(--console-line);
+    border-radius: 6px;
+    background: #ffffff;
+  }
+
+  .console-page-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--console-line);
+
+    h1 {
+      margin: 0;
+      color: var(--console-ink);
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    p {
+      display: inline;
+      margin: 0 0 0 12px;
+      color: var(--console-muted);
+      font-size: 12px;
+    }
+  }
+
+  .page-title-copy {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .console-page-kicker,
+  .console-page-mark {
+    display: none;
+  }
+
+  .overview-intro {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--console-line);
+
+    h1 {
+      display: inline;
+      margin: 0;
+      color: var(--console-ink);
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    p {
+      display: inline;
+      margin: 0 0 0 12px;
+      color: var(--console-muted);
+      font-size: 12px;
+    }
+  }
+
+  .overview-eyebrow {
+    display: none;
+  }
+
+  .overview-sync {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+
+    strong,
+    span:not(.sync-dot) {
+      display: inline;
+      margin: 0;
+      color: var(--console-muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    strong::after {
+      content: " · ";
+    }
+  }
+
+  .sync-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    background: #00b42a;
+    box-shadow: none;
+
+    &.syncing {
+      background: #ff7d00;
+      animation: none;
+    }
+  }
+
+  .arco-card {
+    border: 1px solid var(--console-line);
+    border-radius: 6px;
+    box-shadow: none;
+  }
+
+  .finance-a-card {
+    transition: border-color 120ms ease;
+  }
+
+  .finance-a-card:hover {
+    border-color: #c9cdd4;
+    box-shadow: none;
+    transform: none;
+  }
+
+  .arco-card-header {
+    min-height: 48px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--console-line);
+  }
+
+  .arco-card-body {
+    padding: 16px;
+  }
+
+  .arco-table-container {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .arco-table-th {
+    height: 42px;
+    color: #4e5969;
+    background: #f7f8fa;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .arco-table-td {
+    height: 50px;
+    color: var(--console-ink);
+    border-color: #f2f3f5;
+  }
+
+  .arco-table-tr:hover .arco-table-td {
+    background: #f7faff;
+  }
+
+  .arco-form-item-label-col > .arco-form-item-label {
+    color: #4e5969;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .arco-input-wrapper,
+  .arco-select-view,
+  .arco-textarea-wrapper,
+  .arco-picker {
+    border-color: #c9cdd4;
+    border-radius: 4px;
+    background: #ffffff;
+    transition:
+      border-color 120ms ease,
+      box-shadow 120ms ease;
+  }
+
+  .arco-input-wrapper:hover,
+  .arco-select-view:hover,
+  .arco-textarea-wrapper:hover,
+  .arco-picker:hover {
+    border-color: #86909c;
+    background: #ffffff;
+  }
+
+  .arco-input-wrapper.arco-input-focus,
+  .arco-select-view.arco-select-view-focus,
+  .arco-textarea-wrapper:focus-within,
+  .arco-picker-focused {
+    border-color: var(--console-blue);
+    box-shadow: 0 0 0 2px rgb(22 93 255 / 12%);
+  }
+
+  .arco-btn {
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .arco-btn-primary {
+    background: var(--console-blue);
+    border-color: var(--console-blue);
+  }
+
+  .arco-btn-primary:hover {
+    background: #0e42d2;
+    border-color: #0e42d2;
+  }
+}
+
+@media (max-width: 768px) {
+  .console-shell {
+    .header {
+      height: 56px;
+      padding: 0 14px;
+    }
+
+    .snow-page {
+      padding: 16px 12px 24px;
+    }
+
+    .snow-inner > .arco-form:first-of-type {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 14px 14px 0;
+
+      .arco-row {
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+      }
+
+      .arco-col {
+        padding-right: 0 !important;
+        padding-left: 0 !important;
+      }
+
+      .arco-form-item {
+        display: block;
+        margin-bottom: 12px;
+      }
+
+      .arco-form-item-label-col,
+      .arco-form-item-wrapper-col,
+      .arco-form-item-content,
+      .arco-form-item-content-flex {
+        box-sizing: border-box;
+        width: 100% !important;
+        min-width: 0;
+      }
+
+      .arco-form-item-label-col {
+        margin-bottom: 6px;
+        padding-right: 0;
+        justify-content: flex-start !important;
+      }
+
+      .arco-form-item-label-col > .arco-form-item-label {
+        justify-content: flex-start;
+      }
+
+      .arco-input-wrapper,
+      .arco-select-view,
+      .arco-picker {
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .search-btn {
+        margin-bottom: 14px;
+      }
+    }
+
+    .console-page-heading,
+    .overview-intro {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+
+      h1 {
+        font-size: 20px;
+      }
+
+      p {
+        display: block;
+        margin: 0;
+        line-height: 1.5;
+      }
+    }
+
+    .page-title-copy {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .overview-sync {
+      align-self: flex-start;
+    }
+
+    .arco-card-body {
+      padding: 14px;
+    }
+  }
+}
