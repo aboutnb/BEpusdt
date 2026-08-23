@@ -28,10 +28,18 @@ const themeStore = useThemeConfig();
 const { collapsed, asideDark } = storeToRefs(themeStore);
 const routerStore = useRouteConfigStore();
 const { routeTree } = storeToRefs(routerStore);
+const route = useRoute();
 
 const handleCancel = () => {
   collapsed.value = true;
 };
+
+watch(
+  () => route.fullPath,
+  () => {
+    collapsed.value = true;
+  }
+);
 </script>
 
 <style lang="scss" scoped>

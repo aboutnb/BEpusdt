@@ -12,7 +12,7 @@ import (
 )
 
 func init() {
-	Register(Task{Duration: time.Second * 3, Callback: notifyRetry})
+	Register(Task{Duration: time.Second, Callback: notifyRetry})
 	Register(Task{Duration: time.Second * 30, Callback: notifyRoll})
 }
 
@@ -26,6 +26,12 @@ func notifyRetry(context.Context) {
 	}
 
 	for _, order := range tradeOrders {
+		if order.ApiType == model.OrderApiTypeMerchant {
+			if order.NotifyNextAt == nil || !order.NotifyNextAt.After(time.Now()) {
+				go notify.Handle(order)
+			}
+			continue
+		}
 		next := utils.CalcNextNotifyTime(*order.ConfirmedAt, order.NotifyNum)
 		if time.Now().Unix() >= next.Unix() {
 			go notify.Handle(order)

@@ -35,6 +35,9 @@ func Handler() *gin.Engine {
 	engine.Use(gin.LoggerWithWriter(log.GetWriter()), gin.Recovery())
 	engine.Use(sessionAuth(), copyright())
 	engine.NoRoute(noRoute())
+	engine.GET("/health", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
 	engine.GET("/", func(ctx *gin.Context) {
 		if !model.IsInstalled() {
 			model.InstallLock()
@@ -46,6 +49,14 @@ func Handler() *gin.Engine {
 		sess := sessions.Default(ctx)
 		if secure, ok := sess.Get(conf.AdminSecureK).(bool); ok && secure {
 			ctx.HTML(200, "secure.html", gin.H{})
+			return
+		}
+
+		// The login API is intentionally scoped to the hidden admin entry point.
+		// Redirect the public root there so a direct visit does not render a login
+		// form that can never establish the required session.
+		if securePath := model.GetC(model.AdminSecure); securePath != "" {
+			ctx.Redirect(302, securePath)
 			return
 		}
 

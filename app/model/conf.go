@@ -16,8 +16,32 @@ import (
 )
 
 var confCache sync.Map
+var confEnvOverrides = map[ConfKey]string{
+	ApiHMACKeyID:         "BEPUSDT_HMAC_KEY_ID",
+	ApiHMACSecret:        "BEPUSDT_HMAC_SECRET",
+	ApiNotifyHosts:       "BEPUSDT_NOTIFY_HOSTS",
+	ApiRedirectHosts:     "BEPUSDT_REDIRECT_HOSTS",
+	ApiHMACClockSkew:     "BEPUSDT_HMAC_CLOCK_SKEW_SECONDS",
+	ScannerMaxAgeSeconds: "BEPUSDT_SCANNER_MAX_AGE_SECONDS",
+	ScannerMinSuccess:    "BEPUSDT_SCANNER_MIN_SUCCESS_RATE",
+	ScannerMaxLagBlocks:  "BEPUSDT_SCANNER_MAX_LAG_BLOCKS",
+	ScannerQueueMax:      "BEPUSDT_SCANNER_QUEUE_MAX",
+	CallbackBacklogMax:   "BEPUSDT_CALLBACK_BACKLOG_MAX",
+	RpcEndpointBsc:       "BEPUSDT_RPC_ENDPOINT_BSC",
+	RpcEndpointTron:      "BEPUSDT_RPC_ENDPOINT_TRON",
+}
 var defaultConf = map[ConfKey]string{
 	ApiAppUri:               "",
+	ApiHMACKeyID:            "default",
+	ApiHMACSecret:           "",
+	ApiNotifyHosts:          "",
+	ApiRedirectHosts:        "",
+	ApiHMACClockSkew:        "300",
+	ScannerMaxAgeSeconds:    "120",
+	ScannerMinSuccess:       "99",
+	ScannerMaxLagBlocks:     "30",
+	ScannerQueueMax:         "80",
+	CallbackBacklogMax:      "50",
 	RateSyncInterval:        "3600",
 	AtomUSDT:                "0.01",
 	AtomUSDC:                "0.01",
@@ -39,11 +63,12 @@ var defaultConf = map[ConfKey]string{
 	RpcEndpointAptos:        "https://aptos-rest.publicnode.com/",
 	RpcEndpointPlasma:       "https://rpc.plasma.to/",
 	RpcGlobalConfigUrlTon:   "https://ton.org/global-config.json",
-	NotifyMaxRetry:          "10",
+	NotifyMaxRetry:          "20",
 	BlockHeightMaxDiff:      "1000",
 	BlockOffsetConfirm:      "0",
 	PaymentTimeout:          "1200",     // 20分钟
 	PaymentCheckout:         "official", // 官方模板
+	PaymentCheckoutTitle:    "",
 	PaymentMatchMode:        string(Classic),
 	PaymentSupportUrl:       "",
 	PaymentLookbackHour:     "3",
@@ -133,6 +158,11 @@ func RefreshC() {
 	for _, row := range rows {
 		confCache.Store(row.K, row.V)
 	}
+	for key, envName := range confEnvOverrides {
+		if value, configured := os.LookupEnv(envName); configured {
+			confCache.Store(key, value)
+		}
+	}
 }
 
 func CheckoutUrl(host, id string) string {
@@ -206,6 +236,22 @@ func ConfInit() {
 func AuthToken() string {
 
 	return GetK(ApiAuthToken)
+}
+
+func MerchantKeyID() string {
+	keyID := strings.TrimSpace(GetC(ApiHMACKeyID))
+	if keyID == "" {
+		return "default"
+	}
+	return keyID
+}
+
+func MerchantSecret() string {
+	secret := GetC(ApiHMACSecret)
+	if secret == "" {
+		return AuthToken()
+	}
+	return secret
 }
 
 func IsInstalled() bool {

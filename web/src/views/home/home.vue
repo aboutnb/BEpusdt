@@ -1,6 +1,19 @@
 <template>
   <div class="snow-page">
     <div class="home-page">
+      <div class="overview-intro">
+        <div class="overview-copy">
+          <h1>运营总览</h1>
+          <p>收款、订单与资产概览</p>
+        </div>
+        <div class="overview-sync">
+          <span class="sync-dot" :class="{ syncing: loading }"></span>
+          <div>
+            <strong>{{ loading ? "正在同步" : "数据已同步" }}</strong>
+            <span>{{ timezone }} · {{ activeRangeLabel }}</span>
+          </div>
+        </div>
+      </div>
       <div class="dashboard-toolbar">
         <!-- 法币选择器 -->
         <div class="fiat-selector">
@@ -75,6 +88,8 @@ const rangeOptions = [
   { value: "custom", label: "自定义" }
 ];
 
+const activeRangeLabel = computed(() => rangeOptions.find(item => item.value === range.value)?.label || "自定义周期");
+
 const clearDashboardRetry = () => {
   if (dashboardRetryTimer) {
     clearTimeout(dashboardRetryTimer);
@@ -109,9 +124,12 @@ const getDashboardHome = async (force = false, retryCount = 0) => {
     home.value = data.data;
   } catch (error) {
     if (retryCount < 3) {
-      dashboardRetryTimer = setTimeout(() => {
-        getDashboardHome(force, retryCount + 1);
-      }, (retryCount + 1) * 1000);
+      dashboardRetryTimer = setTimeout(
+        () => {
+          getDashboardHome(force, retryCount + 1);
+        },
+        (retryCount + 1) * 1000
+      );
       return;
     }
     console.error("获取首页统计失败:", error);
@@ -151,28 +169,106 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .home-page {
-  padding: $padding;
-  background: $color-bg-1;
+  padding: 0;
+  background: transparent;
+}
+
+.overview-intro {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 2px 0 14px;
+  border-bottom: 1px solid var(--console-line, #e5e6eb);
+
+  h1 {
+    margin: 0;
+    color: var(--console-ink, #1d2129);
+    font-size: 22px;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+
+  p {
+    margin: 0;
+    color: #86909c;
+    font-size: 13px;
+  }
+}
+
+.overview-copy {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.overview-sync {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+
+  strong,
+  span {
+    display: inline;
+  }
+
+  strong {
+    color: #86909c;
+    font-size: 12px;
+    font-weight: 400;
+
+    &::after {
+      content: " · ";
+    }
+  }
+
+  span:not(.sync-dot) {
+    margin: 0;
+    color: #86909c;
+    font-size: 12px;
+  }
+}
+
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: #00b42a;
+  box-shadow: none;
+
+  &.syncing {
+    background: #ff7d00;
+    box-shadow: none;
+    animation: none;
+  }
 }
 
 .dashboard-toolbar {
   margin-bottom: 16px;
+  padding-bottom: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  border-bottom: 1px solid var(--console-line, #e5e6eb);
 }
 
 .fiat-selector {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  background: $color-bg-2;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  border: 1px solid $color-border-2;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 
   .label {
     font-size: 13px;
@@ -191,7 +287,7 @@ onUnmounted(() => {
     align-items: center;
     gap: 4px;
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
     border: 1px solid $color-border-2;
@@ -208,7 +304,7 @@ onUnmounted(() => {
       background: $color-primary;
       border-color: $color-primary;
       color: #fff;
-      box-shadow: 0 2px 8px rgb(var(--primary-6) / 25%);
+      box-shadow: none;
 
       .currency-symbol,
       .currency-name {
@@ -240,6 +336,28 @@ onUnmounted(() => {
 
 // 响应式设计
 @media (max-width: 768px) {
+  .overview-intro {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+
+    h1 {
+      font-size: 20px;
+    }
+  }
+
+  .overview-copy {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .overview-sync {
+    box-sizing: border-box;
+    width: auto;
+  }
+
   .dashboard-toolbar {
     align-items: stretch;
   }
@@ -259,7 +377,13 @@ onUnmounted(() => {
     .fiat-option {
       flex: 1;
       min-width: auto;
+      padding: 6px 4px;
       margin-bottom: 4px;
+      white-space: nowrap;
+
+      .currency-name {
+        white-space: nowrap;
+      }
     }
   }
 

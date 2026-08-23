@@ -1,6 +1,12 @@
 <template>
   <div class="snow-page">
     <div class="snow-inner">
+      <div class="console-page-heading">
+        <div class="page-title-copy">
+          <h1>钱包管理</h1>
+          <p>收款地址与网络状态</p>
+        </div>
+      </div>
       <a-form ref="formRef" auto-label-width :model="formData.form">
         <a-row :gutter="16">
           <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="6" :xxl="6">
@@ -288,10 +294,12 @@ import { Notification } from "@arco-design/web-vue";
 import { useUserInfoStore } from "@/store/modules/user-info";
 import { useWalletDetail } from "./detail";
 import { useLayoutModel } from "@/hooks/useLayoutModel";
+import { useDevicesSize } from "@/hooks/useDevicesSize";
 
 const userStores = useUserInfoStore();
 const { detailVisible, detailData, showDetail, closeDetail } = useWalletDetail();
 const { dialogWidth, formLayout } = useLayoutModel();
+const { isMobile } = useDevicesSize();
 const formDialogWidth = computed(() => dialogWidth("40%"));
 const detailDialogWidth = computed(() => dialogWidth("680px"));
 
@@ -313,15 +321,15 @@ const pagination = ref<Pagination>({
   total: 10
 });
 
-const columns = [
+const columns = computed(() => [
   { title: "ID", align: "center", dataIndex: "id", width: 80 },
   { title: "名称", align: "center", dataIndex: "name", width: 200 },
   { title: "交易类型", align: "center", dataIndex: "trade_type", width: 120 },
   { title: "钱包地址", align: "center", dataIndex: "address", slotName: "address", width: 300, ellipsis: true },
   { title: "收款状态", dataIndex: "status", align: "center", slotName: "status", width: 100 },
   { title: "其它通知", dataIndex: "other_notify", align: "center", slotName: "other_notify", width: 100 },
-  { title: "操作", slotName: "optional", align: "center", fixed: "right", width: 200 }
-];
+  { title: "操作", slotName: "optional", align: "center", fixed: isMobile.value ? undefined : ("right" as const), width: 200 }
+]);
 
 const rules = {
   name: [{ required: true, message: "请输入钱包名称" }],

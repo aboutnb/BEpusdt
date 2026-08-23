@@ -388,7 +388,7 @@ func (s *solana) lookbackSlots(ctx context.Context) {
 		return
 	}
 
-	startAt, endAt, ok := getLookbackUnix(conf.Solana)
+	startAt, endAt, orderIDs, ok := getLookbackUnix(conf.Solana)
 	if !ok {
 		return
 	}
@@ -406,4 +406,5 @@ func (s *solana) lookbackSlots(ctx context.Context) {
 		s.slotQueue.In <- i
 		time.Sleep(time.Millisecond * 200)
 	}
+	markLookbackDone(orderIDs)
 }

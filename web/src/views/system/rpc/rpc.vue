@@ -1,5 +1,11 @@
 <template>
   <div class="snow-page">
+    <div class="console-page-heading rpc-heading">
+      <div class="page-title-copy">
+        <h1>网络与 RPC</h1>
+        <p>节点状态与多网络配置</p>
+      </div>
+    </div>
     <a-spin :loading="loading" tip="正在加载..." class="full-height">
       <!-- 网络状态总览 -->
       <a-card :bordered="false" class="stats-card">
@@ -20,7 +26,7 @@
           <div v-for="net in sortedNetworks" :key="net.key" class="network-stat-card" :class="getNetworkClass(net.key)">
             <!-- 网络头部 -->
             <div class="net-card-header">
-              <div class="net-badge" :style="{ background: net.color }">
+              <div class="net-badge">
                 <component :is="net.icon" />
               </div>
               <div class="net-name">{{ net.label }}</div>
@@ -80,11 +86,7 @@
               <icon-settings />
             </div>
             <span>区块网络配置</span>
-            <a
-              href="https://github.com/v03413/BEpusdt/blob/main/docs/faq/rpc-endpoint.md"
-              target="_blank"
-              class="title-doc-link"
-            >
+            <a href="https://github.com/v03413/BEpusdt/blob/main/docs/faq/rpc-endpoint.md" target="_blank" class="title-doc-link">
               <icon-exclamation-circle />
               必读：节点配置说明
             </a>
@@ -429,35 +431,35 @@ onUnmounted(() => {
   align-items: center;
   gap: 4px;
   margin-left: 4px;
-  padding: 2px 10px;
-  border-radius: 20px;
-  background: rgba(var(--danger-6), 0.1);
-  border: 1px solid rgba(var(--danger-6), 0.3);
-  color: $color-danger;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: $color-primary;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 400;
   text-decoration: none;
   transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(var(--danger-6), 0.18);
-    border-color: rgba(var(--danger-6), 0.55);
-    box-shadow: 0 2px 8px rgba(var(--danger-6), 0.2);
+    background: transparent;
+    color: rgb(var(--primary-5));
+    box-shadow: none;
   }
 }
 
 /* ============ 状态总览卡片 ============ */
 .stats-card {
   margin-bottom: 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border-radius: 6px;
+  box-shadow: none;
   background: $color-bg-2;
 
   :deep(.arco-card-header) {
     border-bottom: 1px solid $color-border-2;
     padding: 12px 16px;
-    background: $color-bg-3;
-    border-radius: 8px 8px 0 0;
+    background: $color-bg-2;
+    border-radius: 6px 6px 0 0;
   }
 
   :deep(.arco-card-body) {
@@ -472,11 +474,14 @@ onUnmounted(() => {
   align-items: center;
   gap: 3px;
   padding: 1px 6px;
+  color: $color-text-3;
+  background: $color-fill-2;
+  border: 0;
 }
 
 .spin-icon {
   font-size: 11px;
-  animation: spin 2s linear infinite;
+  animation: none;
 }
 
 @keyframes spin {
@@ -503,38 +508,30 @@ onUnmounted(() => {
     grid-template-columns: repeat(2, 1fr);
   }
   @media (max-width: 420px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 340px) {
     grid-template-columns: 1fr;
   }
 }
 
 .network-stat-card {
   position: relative;
-  background: $color-bg-3;
+  background: $color-bg-2;
   border: 1px solid $color-border-2;
-  border-radius: 8px;
+  border-radius: 4px;
   padding: 10px 12px;
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease;
   overflow: hidden;
 
   &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: $color-fill-3;
-    transition: background 0.2s ease;
+    display: none;
   }
 
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transform: translateY(-1px);
-    border-color: rgb(var(--primary-3));
-  }
-
-  &.tron-net-card::before {
-    background: linear-gradient(90deg, #e8503a, #ff7b5a);
+    border-color: $color-border-3;
+    box-shadow: none;
+    transform: none;
   }
 }
 
@@ -548,11 +545,12 @@ onUnmounted(() => {
 .net-badge {
   width: 24px;
   height: 24px;
-  border-radius: 5px;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: $color-text-2;
+  background: $color-fill-2 !important;
   font-size: 12px;
   flex-shrink: 0;
 }
@@ -576,18 +574,18 @@ onUnmounted(() => {
 
   &.dot-good {
     background: #00b42a;
-    box-shadow: 0 0 0 2px rgba(0, 180, 42, 0.2);
-    animation: pulse-good 2s infinite;
+    box-shadow: none;
+    animation: none;
   }
 
   &.dot-warn {
     background: #ff7d00;
-    box-shadow: 0 0 0 2px rgba(255, 125, 0, 0.2);
+    box-shadow: none;
   }
 
   &.dot-bad {
     background: #f53f3f;
-    box-shadow: 0 0 0 2px rgba(245, 63, 63, 0.2);
+    box-shadow: none;
   }
 
   &.dot-unknown {
@@ -632,10 +630,10 @@ onUnmounted(() => {
   }
 
   .success-icon {
-    color: #00b42a;
+    color: $color-text-3;
   }
   .block-icon {
-    color: $color-primary;
+    color: $color-text-3;
   }
   .time-icon {
     color: $color-text-3;
@@ -665,7 +663,7 @@ onUnmounted(() => {
   &.block-value {
     font-family: monospace;
     font-size: 11px;
-    color: $color-primary;
+    color: $color-text-2;
   }
 
   &.time-value {
@@ -677,36 +675,21 @@ onUnmounted(() => {
 }
 
 .no-data-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba($color-bg-3, 0.85);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border-radius: 8px;
-  color: $color-text-4;
-  font-size: 11px;
-  padding-top: 20px;
-
-  svg {
-    font-size: 20px;
-  }
+  display: none;
 }
 
 /* ============ 主配置卡片 ============ */
 .main-card {
   margin-top: 0;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border-radius: 6px;
+  box-shadow: none;
   background: $color-bg-2;
 
   :deep(.arco-card-header) {
     border-bottom: 1px solid $color-border-2;
     padding: 14px 18px;
-    background: $color-bg-3;
-    border-radius: 8px 8px 0 0;
+    background: $color-bg-2;
+    border-radius: 6px 6px 0 0;
   }
 
   :deep(.arco-card-body) {
@@ -726,15 +709,15 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    background: $color-primary;
-    border-radius: 6px;
-    color: #fff;
-    font-size: 13px;
+    width: auto;
+    height: auto;
+    background: transparent;
+    border-radius: 0;
+    color: $color-text-2;
+    font-size: 16px;
 
     &.stats-icon {
-      background: linear-gradient(135deg, #165dff, #722ed1);
+      background: transparent;
     }
   }
 }
@@ -747,8 +730,8 @@ onUnmounted(() => {
   height: 30px;
 
   &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+    transform: none;
+    box-shadow: none;
   }
 }
 
@@ -766,22 +749,16 @@ onUnmounted(() => {
 }
 
 .tron-section {
-  background: rgba(var(--danger-6), 0.06);
-  border: 1px solid rgba(var(--danger-6), 0.18);
-  border-radius: 6px;
-  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
   margin-bottom: 12px;
   position: relative;
   overflow: hidden;
 
   &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: rgba(var(--danger-6), 0.72);
+    display: none;
   }
 
   .section-header {
@@ -798,11 +775,11 @@ onUnmounted(() => {
       justify-content: center;
       width: 20px;
       height: 20px;
-      background: $color-danger;
-      border-radius: 4px;
-      color: #fff;
-      font-size: 11px;
-      box-shadow: 0 2px 4px rgba(var(--danger-6), 0.3);
+      background: transparent;
+      border-radius: 0;
+      color: $color-text-2;
+      font-size: 14px;
+      box-shadow: none;
     }
 
     .header-title {
@@ -814,22 +791,16 @@ onUnmounted(() => {
 }
 
 .other-section {
-  background: rgba(var(--success-6), 0.06);
-  border: 1px solid rgba(var(--success-6), 0.18);
-  border-radius: 6px;
-  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 12px 0 0;
   margin-bottom: 12px;
   position: relative;
   overflow: hidden;
 
   &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: rgba(var(--success-6), 0.72);
+    display: none;
   }
 
   .section-header {
@@ -846,11 +817,11 @@ onUnmounted(() => {
       justify-content: center;
       width: 20px;
       height: 20px;
-      background: $color-success;
-      border-radius: 4px;
-      color: #fff;
-      font-size: 11px;
-      box-shadow: 0 2px 4px rgba(var(--success-6), 0.3);
+      background: transparent;
+      border-radius: 0;
+      color: $color-text-2;
+      font-size: 14px;
+      box-shadow: none;
     }
 
     .header-title {
@@ -866,13 +837,13 @@ onUnmounted(() => {
       background: $color-bg-2;
 
       &:hover {
-        border-color: $color-success;
-        box-shadow: 0 0 0 2px rgba(var(--success-6), 0.08);
+        border-color: $color-text-3;
+        box-shadow: none;
       }
 
       &.arco-input-focus {
-        border-color: $color-success;
-        box-shadow: 0 0 0 2px rgba(var(--success-6), 0.1);
+        border-color: $color-primary;
+        box-shadow: 0 0 0 2px rgba(var(--primary-6), 0.08);
       }
     }
   }
@@ -920,13 +891,13 @@ onUnmounted(() => {
     border-color: $color-border-2;
 
     &:hover {
-      border-color: $color-danger;
-      box-shadow: 0 0 0 2px rgba(var(--danger-6), 0.08);
+      border-color: $color-text-3;
+      box-shadow: none;
     }
 
     &.arco-input-focus {
-      border-color: $color-danger;
-      box-shadow: 0 0 0 2px rgba(var(--danger-6), 0.1);
+      border-color: $color-primary;
+      box-shadow: 0 0 0 2px rgba(var(--primary-6), 0.08);
     }
   }
 }
@@ -983,18 +954,23 @@ onUnmounted(() => {
     align-items: center;
     gap: 3px;
     padding: 1px 7px;
-    border-radius: 20px;
-    background: rgba(var(--warning-6), 0.12);
-    border: 1px solid rgba(var(--warning-6), 0.4);
+    border-radius: 3px;
+    background: $color-fill-2;
+    border: 0;
     color: rgb(var(--warning-6));
     font-size: 11px;
-    font-weight: 600;
-    animation: recommend-pulse 2.5s ease-in-out infinite;
+    font-weight: 500;
+    animation: none;
   }
 
   @keyframes recommend-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(var(--warning-6), 0); }
-    50% { box-shadow: 0 0 0 3px rgba(var(--warning-6), 0.15); }
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(var(--warning-6), 0);
+    }
+    50% {
+      box-shadow: 0 0 0 3px rgba(var(--warning-6), 0.15);
+    }
   }
 }
 

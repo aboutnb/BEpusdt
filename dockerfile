@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 FROM node:25.2.1 AS web_builder
 
 # 安装 pnpm
@@ -15,13 +17,18 @@ FROM golang:1.26.2-alpine3.23 AS builder
 
 ENV GO111MODULE=on
 WORKDIR /go/release
-ADD . .
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+
+COPY . .
 
 COPY --from=web_builder /web/dist ./static/secure
 
 ARG VERSION=unknown
 
-RUN set -x \
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    set -x \
     && MODULE_PATH=$(go list -m) \
     && CGO_ENABLED=0 go build -trimpath \
     -ldflags="-X '${MODULE_PATH}/app.Version=${VERSION}' -s -w -buildid=" \

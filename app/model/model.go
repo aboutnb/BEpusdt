@@ -124,6 +124,7 @@ func AutoMigrate() error {
 		&Wallet{},
 		&Order{},
 		&NotifyRecord{},
+		&MerchantNonce{},
 		&Conf{},
 		&Rate{},
 	})

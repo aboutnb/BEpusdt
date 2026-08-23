@@ -1,5 +1,5 @@
 <template>
-  <a-layout class="layout" :has-sider="true">
+  <a-layout class="layout console-shell" :has-sider="true">
     <Aside v-if="isPc" />
     <a-layout class="layout-right">
       <Header />

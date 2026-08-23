@@ -13,12 +13,27 @@ services:
       LOG: /var/log/bepusdt/
       SQLITE: /var/lib/bepusdt/sqlite.db
       TZ: ${TZ:-Asia/Shanghai}
+      BEPUSDT_CHECKOUT_TITLE: ${BEPUSDT_CHECKOUT_TITLE:-加密货币收款网关}
+      BEPUSDT_HMAC_KEY_ID: ${BEPUSDT_HMAC_KEY_ID:-sub2api}
+      BEPUSDT_NOTIFY_HOSTS: ${BEPUSDT_NOTIFY_HOSTS:-host.docker.internal,127.0.0.1,localhost}
+      BEPUSDT_REDIRECT_HOSTS: ${BEPUSDT_REDIRECT_HOSTS:-127.0.0.1,localhost,192.168.3.50}
+      BEPUSDT_HMAC_CLOCK_SKEW_SECONDS: ${BEPUSDT_HMAC_CLOCK_SKEW_SECONDS:-300}
+      BEPUSDT_SCANNER_MAX_AGE_SECONDS: ${BEPUSDT_SCANNER_MAX_AGE_SECONDS:-120}
+      BEPUSDT_SCANNER_MIN_SUCCESS_RATE: ${BEPUSDT_SCANNER_MIN_SUCCESS_RATE:-99}
+      BEPUSDT_SCANNER_MAX_LAG_BLOCKS: ${BEPUSDT_SCANNER_MAX_LAG_BLOCKS:-30}
+      BEPUSDT_SCANNER_QUEUE_MAX: ${BEPUSDT_SCANNER_QUEUE_MAX:-80}
+      BEPUSDT_CALLBACK_BACKLOG_MAX: ${BEPUSDT_CALLBACK_BACKLOG_MAX:-50}
     volumes:
-      - ./data:/var/lib/bepusdt
+      # SQLite WAL is not reliable on Docker Desktop's macOS shared folders.
+      # Keep the database in a Docker-managed volume instead.
+      - bepusdt_data:/var/lib/bepusdt
       - ./logs:/var/log/bepusdt
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -T 5 -O /dev/null http://127.0.0.1:8080/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q -T 5 -O /dev/null http://127.0.0.1:8080/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 6
       start_period: 15s
+
+volumes:
+  bepusdt_data:

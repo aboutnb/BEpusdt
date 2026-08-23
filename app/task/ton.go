@@ -269,7 +269,9 @@ func (t *ton) syncBreak() bool {
 	}
 
 	var count int64
-	model.Db.Model(&model.Wallet{}).Where("other_notify = ? and trade_type in (?)", model.WaOtherEnable, trade).Count(&count)
+	// Payment scanners must stay active for enabled receiving wallets. The
+	// other_notify flag only controls non-order transfer notifications.
+	model.Db.Model(&model.Wallet{}).Where("status = ? and trade_type in (?)", model.WaStatusEnable, trade).Count(&count)
 	if count > 0 {
 
 		return false

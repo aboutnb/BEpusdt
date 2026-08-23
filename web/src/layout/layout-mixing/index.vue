@@ -1,5 +1,5 @@
 <template>
-  <a-layout class="layout">
+  <a-layout class="layout console-shell">
     <div :class="asideDark ? 'aside dark' : 'aside'" v-if="isPc">
       <Logo />
       <a-layout-sider :collapsed="collapsed" breakpoint="xl" class="layout_side" :width="220">

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -32,6 +33,27 @@ type EpNotify struct {
 	Status             int     `json:"status"`               //  1：等待支付，2：支付成功，3：订单超时
 }
 
+type MerchantNotify struct {
+	EventID            string `json:"event_id"`
+	EventType          string `json:"event_type"`
+	OccurredAt         int64  `json:"occurred_at"`
+	OrderID            string `json:"order_id"`
+	TradeID            string `json:"trade_id"`
+	Fiat               string `json:"fiat"`
+	Amount             string `json:"amount"`
+	Crypto             string `json:"crypto"`
+	ActualAmount       string `json:"actual_amount"`
+	TradeType          string `json:"trade_type"`
+	Network            string `json:"network"`
+	Token              string `json:"token"`
+	BlockTransactionID string `json:"block_transaction_id"`
+	TransferAt         int64  `json:"transfer_at"`
+	BlockNumber        int    `json:"block_number"`
+	SignatureVersion   string `json:"signature_version"`
+	KeyID              string `json:"key_id"`
+	Signature          string `json:"signature,omitempty"`
+}
+
 func Handle(order model.Order) error {
 	if order.Status != model.OrderStatusSuccess {
 
@@ -42,7 +64,9 @@ func Handle(order model.Order) error {
 	defer cancel()
 
 	var err error
-	if order.ApiType == model.OrderApiTypeEpay {
+	if order.ApiType == model.OrderApiTypeMerchant {
+		err = merchantV2(order)
+	} else if order.ApiType == model.OrderApiTypeEpay {
 		err = epay(ctx, order)
 	} else {
 		err = epusdt(ctx, order)
@@ -94,12 +118,124 @@ func epay(ctx context.Context, order model.Order) error {
 
 		return fmt.Errorf("商户系统必须响应 success 或 ok 才会认定回调成功，实际响应：%s", string(all))
 	}
-
 	if err = order.SetNotifyState(model.OrderNotifyStateSucc); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+var merchantRetrySchedule = []time.Duration{
+	time.Second, 2 * time.Second, 5 * time.Second, 10 * time.Second, 20 * time.Second, 30 * time.Second,
+	time.Minute, 2 * time.Minute, 5 * time.Minute, 10 * time.Minute, 30 * time.Minute,
+}
+
+func merchantV2(order model.Order) error {
+	current, claimed, err := model.ClaimMerchantNotification(order.TradeId, time.Now())
+	if err != nil {
+		return err
+	}
+	if !claimed {
+		return nil
+	}
+
+	payload, err := buildMerchantNotify(current)
+	if err != nil {
+		return recordMerchantFailure(current, 0, "", err)
+	}
+	unsigned, err := json.Marshal(payload)
+	if err != nil {
+		return recordMerchantFailure(current, 0, "", err)
+	}
+	payload.Signature = utils.HMACSHA256Hex(model.MerchantSecret(), unsigned)
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return recordMerchantFailure(current, 0, "", err)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, current.NotifyUrl, strings.NewReader(string(body)))
+	if err != nil {
+		return recordMerchantFailure(current, 0, "", err)
+	}
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	nonce, err := utils.GenerateTradeId()
+	if err != nil {
+		return recordMerchantFailure(current, 0, "", err)
+	}
+	digest := utils.SHA256Hex(body)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "BEpusdt/"+app.Version)
+	req.Header.Set(utils.HMACKeyIDHeader, model.MerchantKeyID())
+	req.Header.Set(utils.HMACTimestampHeader, timestamp)
+	req.Header.Set(utils.HMACNonceHeader, nonce)
+	req.Header.Set(utils.HMACDigestHeader, digest)
+	req.Header.Set(utils.HMACSignatureHeader, utils.HMACV2Sign(model.MerchantSecret(), req.Method, req.URL.EscapedPath(), timestamp, nonce, digest))
+
+	resp, err := (&http.Client{Timeout: 5 * time.Second}).Do(req)
+	if err != nil {
+		return recordMerchantFailure(current, 0, "", err)
+	}
+	defer resp.Body.Close()
+	responseBody, readErr := io.ReadAll(io.LimitReader(resp.Body, 513))
+	responseText := truncate(string(responseBody), 512)
+	if readErr != nil {
+		return recordMerchantFailure(current, resp.StatusCode, responseText, readErr)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return recordMerchantFailure(current, resp.StatusCode, responseText, fmt.Errorf("merchant returned HTTP %d", resp.StatusCode))
+	}
+	if string(responseBody) != "success" {
+		return recordMerchantFailure(current, resp.StatusCode, responseText, errors.New("merchant response body must be exactly success"))
+	}
+	if err := model.RecordMerchantNotifyAttempt(current.TradeId, true, resp.StatusCode, responseText, "", nil); err != nil {
+		return err
+	}
+	return nil
+}
+
+func buildMerchantNotify(order model.Order) (MerchantNotify, error) {
+	tradeConf, ok := model.GetTradeConfig(order.TradeType)
+	if !ok {
+		return MerchantNotify{}, fmt.Errorf("unknown trade type %s", order.TradeType)
+	}
+	if order.ConfirmedAt == nil || order.ConfirmedAt.IsZero() {
+		return MerchantNotify{}, errors.New("chain transfer timestamp is missing")
+	}
+	if order.RefHash == "" || order.RefHash == order.TradeId {
+		return MerchantNotify{}, errors.New("chain transaction hash is missing")
+	}
+	eventSeed := []byte(strings.Join([]string{"payment.succeeded", order.TradeId, order.RefHash}, "\n"))
+	return MerchantNotify{
+		EventID: "evt_" + utils.SHA256Hex(eventSeed)[:32], EventType: "payment.succeeded",
+		OccurredAt: order.ConfirmedAt.Unix(), OrderID: order.OrderId, TradeID: order.TradeId,
+		Fiat: string(order.Fiat), Amount: order.Money, Crypto: string(order.Crypto), ActualAmount: order.Amount,
+		TradeType: string(order.TradeType), Network: string(tradeConf.Network), Token: order.Address,
+		BlockTransactionID: order.RefHash, TransferAt: order.ConfirmedAt.Unix(), BlockNumber: order.RefBlockNum,
+		SignatureVersion: "v2", KeyID: model.MerchantKeyID(),
+	}, nil
+}
+
+func recordMerchantFailure(order model.Order, status int, response string, deliveryErr error) error {
+	attempt := order.NotifyNum + 1
+	delay := 30 * time.Minute
+	if attempt <= len(merchantRetrySchedule) {
+		delay = merchantRetrySchedule[attempt-1]
+	}
+	next := time.Now().Add(delay)
+	errText := truncate(deliveryErr.Error(), 512)
+	if err := model.RecordMerchantNotifyAttempt(order.TradeId, false, status, truncate(response, 512), errText, &next); err != nil {
+		return fmt.Errorf("%v; persist delivery failure: %w", deliveryErr, err)
+	}
+	return deliveryErr
+}
+
+func truncate(value string, max int) string {
+	if len(value) <= max {
+		return value
+	}
+	return value[:max]
 }
 
 func epusdt(ctx context.Context, order model.Order) error {
@@ -150,6 +286,16 @@ func epusdt(ctx context.Context, order model.Order) error {
 		markNotifyFail(order, fmt.Sprintf("商户系统返回状态码错误：%d（必须是200）", resp.StatusCode))
 
 		return fmt.Errorf("商户系统返回状态码错误：%d（必须是200）", resp.StatusCode)
+	}
+	all, err := io.ReadAll(io.LimitReader(resp.Body, 513))
+	if err != nil {
+		markNotifyFail(order, err.Error())
+		return err
+	}
+	if string(all) != "success" {
+		err = fmt.Errorf("商户系统必须精确响应 success，实际响应：%s", truncate(string(all), 120))
+		markNotifyFail(order, err.Error())
+		return err
 	}
 
 	if err = order.SetNotifyState(model.OrderNotifyStateSucc); err != nil {

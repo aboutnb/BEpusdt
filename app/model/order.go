@@ -15,6 +15,7 @@ import (
 	"github.com/v03413/bepusdt/app/core"
 	"github.com/v03413/bepusdt/app/log"
 	"github.com/v03413/bepusdt/app/utils"
+	"gorm.io/gorm"
 )
 
 const (
@@ -57,37 +58,44 @@ const (
 const (
 	OrderApiTypeEpusdt      = "epusdt"       // epusdt
 	OrderApiTypeEpusdtOrder = "epusdt_order" // epusdt create-order
+	OrderApiTypeMerchant    = "merchant_v2"  // signed server-to-server API
 	OrderApiTypeEpay        = "epay"         // 彩虹易支付
 	OrderApiTypeAdmin       = "admin"        // 管理后台
 )
 
 type Order struct {
 	Id
-	OrderId           string     `gorm:"column:order_id;type:varchar(128);not null;index;comment:商户ID" json:"order_id"`
-	TradeId           string     `gorm:"column:trade_id;type:varchar(128);not null;uniqueIndex;comment:本地ID" json:"trade_id"`
-	TradeType         TradeType  `gorm:"column:trade_type;type:varchar(20);not null;index;comment:交易类型" json:"trade_type"`
-	Fiat              Fiat       `gorm:"column:fiat;type:varchar(16);not null;index;default:CNY;comment:法定货币" json:"fiat"`
-	Crypto            Crypto     `gorm:"column:crypto;type:varchar(16);not null;index;default:USDT;comment:加密货币" json:"crypto"`
-	CurrencyLimit     string     `gorm:"column:currency_limit;type:varchar(255);not null;default:'';comment:限定币种" json:"currency_limit"`
-	Rate              string     `gorm:"column:rate;type:varchar(10);not null;comment:交易汇率" json:"rate"`
-	Amount            string     `gorm:"column:amount;type:varchar(32);not null;default:0.00;comment:交易数额" json:"amount"`
-	Money             string     `gorm:"column:money;type:varchar(32);not null;default:0.00;comment:交易金额" json:"money"`
-	Address           string     `gorm:"column:address;type:varchar(128);index;not null;comment:收款地址" json:"address"`
-	FromAddress       string     `gorm:"column:from_address;type:varchar(128);not null;default:'';comment:支付地址" json:"from_address"`
-	MatchAddress      string     `gorm:"column:match_address;type:varchar(128);not null;default:'';comment:校验地址" json:"match_address"`
-	AddressLocked     bool       `gorm:"column:address_locked;not null;default:false;comment:地址锁定 1:独占 0:共享" json:"address_locked"`
-	Status            int        `gorm:"column:status;not null;default:1;index;index:idx_order_notify_retry,priority:1;comment:交易状态" json:"status"`
-	Name              string     `gorm:"column:name;type:varchar(64);not null;default:'';comment:商品名称" json:"name"`
-	ApiType           string     `gorm:"column:api_type;type:varchar(20);not null;default:'epusdt';comment:API类型" json:"api_type"`
-	ReturnUrl         string     `gorm:"column:return_url;type:varchar(255);not null;default:'';comment:同步地址" json:"return_url"`
-	NotifyUrl         string     `gorm:"column:notify_url;type:varchar(255);not null;default:'';comment:异步地址" json:"notify_url"`
-	NotifyNum         int        `gorm:"column:notify_num;not null;default:0;index:idx_order_notify_retry,priority:3;comment:回调次数" json:"notify_num"`
-	NotifyState       int        `gorm:"column:notify_state;not null;default:0;index:idx_order_notify_retry,priority:2;comment:回调状态 1：成功 0：失败" json:"notify_state"`
-	RefHash           string     `gorm:"column:ref_hash;type:varchar(128);not null;default:'';index;comment:交易哈希" json:"ref_hash"`
-	RefBlockNum       int        `gorm:"column:ref_block_num;not null;default:0;comment:区块索引" json:"ref_block_num"`
-	ExpiredAt         time.Time  `gorm:"column:expired_at;not null;comment:失效时间" json:"expired_at"`
-	ConfirmedAt       *time.Time `gorm:"column:confirmed_at;not null;comment:交易确认时间" json:"confirmed_at"`
-	ClientFingerprint string     `gorm:"column:client_fingerprint;type:varchar(64);not null;default:'';comment:'客户端指纹'" json:"-"`
+	OrderId            string     `gorm:"column:order_id;type:varchar(128);not null;index;comment:商户ID" json:"order_id"`
+	TradeId            string     `gorm:"column:trade_id;type:varchar(128);not null;uniqueIndex;comment:本地ID" json:"trade_id"`
+	TradeType          TradeType  `gorm:"column:trade_type;type:varchar(20);not null;index;comment:交易类型" json:"trade_type"`
+	Fiat               Fiat       `gorm:"column:fiat;type:varchar(16);not null;index;default:CNY;comment:法定货币" json:"fiat"`
+	Crypto             Crypto     `gorm:"column:crypto;type:varchar(16);not null;index;default:USDT;comment:加密货币" json:"crypto"`
+	CurrencyLimit      string     `gorm:"column:currency_limit;type:varchar(255);not null;default:'';comment:限定币种" json:"currency_limit"`
+	Rate               string     `gorm:"column:rate;type:varchar(10);not null;comment:交易汇率" json:"rate"`
+	Amount             string     `gorm:"column:amount;type:varchar(32);not null;default:0.00;comment:交易数额" json:"amount"`
+	Money              string     `gorm:"column:money;type:varchar(32);not null;default:0.00;comment:交易金额" json:"money"`
+	Address            string     `gorm:"column:address;type:varchar(128);index;not null;comment:收款地址" json:"address"`
+	FromAddress        string     `gorm:"column:from_address;type:varchar(128);not null;default:'';comment:支付地址" json:"from_address"`
+	MatchAddress       string     `gorm:"column:match_address;type:varchar(128);not null;default:'';comment:校验地址" json:"match_address"`
+	AddressLocked      bool       `gorm:"column:address_locked;not null;default:false;comment:地址锁定 1:独占 0:共享" json:"address_locked"`
+	Status             int        `gorm:"column:status;not null;default:1;index;index:idx_order_notify_retry,priority:1;comment:交易状态" json:"status"`
+	Name               string     `gorm:"column:name;type:varchar(64);not null;default:'';comment:商品名称" json:"name"`
+	ApiType            string     `gorm:"column:api_type;type:varchar(20);not null;default:'epusdt';comment:API类型" json:"api_type"`
+	ReturnUrl          string     `gorm:"column:return_url;type:varchar(255);not null;default:'';comment:同步地址" json:"return_url"`
+	NotifyUrl          string     `gorm:"column:notify_url;type:varchar(255);not null;default:'';comment:异步地址" json:"notify_url"`
+	NotifyNum          int        `gorm:"column:notify_num;not null;default:0;index:idx_order_notify_retry,priority:3;comment:回调次数" json:"notify_num"`
+	NotifyState        int        `gorm:"column:notify_state;not null;default:0;index:idx_order_notify_retry,priority:2;comment:回调状态 1：成功 0：失败" json:"notify_state"`
+	NotifyNextAt       *time.Time `gorm:"column:notify_next_at;index;comment:下次回调时间" json:"notify_next_at,omitempty"`
+	NotifyLeaseUntil   *time.Time `gorm:"column:notify_lease_until;index;comment:回调投递租约" json:"-"`
+	NotifyLastAt       *time.Time `gorm:"column:notify_last_at;comment:最后回调时间" json:"notify_last_at,omitempty"`
+	NotifyLastStatus   int        `gorm:"column:notify_last_status;not null;default:0;comment:最后回调HTTP状态" json:"notify_last_status"`
+	NotifyLastError    string     `gorm:"column:notify_last_error;type:varchar(512);not null;default:'';comment:最后回调错误" json:"notify_last_error"`
+	NotifyLastResponse string     `gorm:"column:notify_last_response;type:varchar(512);not null;default:'';comment:最后回调响应" json:"notify_last_response"`
+	RefHash            string     `gorm:"column:ref_hash;type:varchar(128);not null;default:'';index;comment:交易哈希" json:"ref_hash"`
+	RefBlockNum        int        `gorm:"column:ref_block_num;not null;default:0;comment:区块索引" json:"ref_block_num"`
+	ExpiredAt          time.Time  `gorm:"column:expired_at;not null;comment:失效时间" json:"expired_at"`
+	ConfirmedAt        *time.Time `gorm:"column:confirmed_at;not null;comment:交易确认时间" json:"confirmed_at"`
+	ClientFingerprint  string     `gorm:"column:client_fingerprint;type:varchar(64);not null;default:'';comment:'客户端指纹'" json:"-"`
 	AutoTimeAt
 }
 
@@ -362,12 +370,55 @@ func GetNotifyFailedTradeOrders() ([]Order, error) {
 	if maxRetry <= 0 {
 		maxRetry = cast.ToInt(defaultConf[NotifyMaxRetry])
 	}
+	if maxRetry < 20 {
+		maxRetry = 20
+	}
 
 	res := Db.Where("status = ?", OrderStatusSuccess).
 		Where("notify_state = ?", OrderNotifyStateFail).
 		Where("notify_num <= ?", maxRetry).Find(&orders)
 
 	return orders, res.Error
+}
+
+func GetOrderByMerchantID(orderID string) (Order, bool) {
+	var order Order
+	res := Db.Where("order_id = ?", orderID).Order("id desc").Limit(1).Find(&order)
+	return order, res.RowsAffected > 0
+}
+
+func ClaimMerchantNotification(tradeID string, now time.Time) (Order, bool, error) {
+	leaseUntil := now.Add(15 * time.Second)
+	res := Db.Model(&Order{}).
+		Where("trade_id = ? AND api_type = ? AND status = ? AND notify_state = ?", tradeID, OrderApiTypeMerchant, OrderStatusSuccess, OrderNotifyStateFail).
+		Where("notify_lease_until IS NULL OR notify_lease_until < ?", now).
+		Updates(map[string]any{"notify_lease_until": leaseUntil})
+	if res.Error != nil || res.RowsAffected == 0 {
+		return Order{}, false, res.Error
+	}
+	var order Order
+	if err := Db.Where("trade_id = ?", tradeID).Limit(1).First(&order).Error; err != nil {
+		return Order{}, false, err
+	}
+	return order, true, nil
+}
+
+func RecordMerchantNotifyAttempt(tradeID string, success bool, status int, response, lastError string, nextAt *time.Time) error {
+	now := time.Now()
+	state := OrderNotifyStateFail
+	if success {
+		state = OrderNotifyStateSucc
+	}
+	return Db.Model(&Order{}).Where("trade_id = ?", tradeID).Updates(map[string]any{
+		"notify_num":           gorm.Expr("notify_num + 1"),
+		"notify_state":         state,
+		"notify_next_at":       nextAt,
+		"notify_lease_until":   nil,
+		"notify_last_at":       now,
+		"notify_last_status":   status,
+		"notify_last_response": response,
+		"notify_last_error":    lastError,
+	}).Error
 }
 
 // CalcTradeAmount 计算当前实际可用的交易金额

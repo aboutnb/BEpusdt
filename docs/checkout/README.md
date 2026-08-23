@@ -46,11 +46,15 @@ BEpusdt 启动时会扫描该目录，自动注册所有合法模板，并在后
 
 ## views/checkout.html
 
-标准的 Go `html/template` 文件。服务端只注入一个变量：
+标准的 Go `html/template` 文件。服务端注入交易 ID 和后台配置的浏览器标题：
 
 ```
 {{ .trade_id }}   // 当前订单的交易 ID
+{{ .checkout_title }} // 收银台浏览器标题
 ```
+
+标题由后台“系统设置 → API 设置 → 收银台浏览器标题”控制；留空时使用
+`BEPUSDT_CHECKOUT_TITLE` 环境变量，仍为空则使用默认值 `加密货币收款网关`。
 
 **所有订单数据均通过前端 AJAX 请求获取**，不在服务端渲染。可以用任意前端框架或原生 JS 实现交互逻辑，参考官方模板
 `static/checkout/official/assets/js/checkout.js` 的写法。

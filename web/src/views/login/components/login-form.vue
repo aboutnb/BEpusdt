@@ -3,14 +3,14 @@
     <div class="login_form_box">
       <a-form :rules="rules" :model="form" layout="vertical" @submit="onSubmit">
         <a-form-item field="username" :hide-asterisk="true">
-          <a-input v-model="form.username" allow-clear placeholder="请输入账号">
+          <a-input v-model="form.username" allow-clear autocomplete="username" placeholder="请输入账号">
             <template #prefix>
               <icon-user />
             </template>
           </a-input>
         </a-form-item>
         <a-form-item field="password" :hide-asterisk="true">
-          <a-input-password v-model="form.password" allow-clear placeholder="请输入密码">
+          <a-input-password v-model="form.password" allow-clear autocomplete="current-password" placeholder="请输入密码">
             <template #prefix>
               <icon-lock />
             </template>
@@ -138,7 +138,31 @@ const handleForgotPassword = () => {
 
 <style lang="scss" scoped>
 .login_form_box {
-  margin-top: 28px;
+  margin-top: 34px;
+
+  :deep(.arco-form-item) {
+    margin-bottom: 20px;
+  }
+
+  :deep(.arco-input-wrapper) {
+    height: 43px;
+    border-color: #cbd8e2;
+    border-radius: 8px;
+    background: #f7fafc;
+  }
+
+  :deep(.arco-btn-primary) {
+    height: 43px;
+    border-radius: 8px;
+    background: #1a8f90;
+    border-color: #1a8f90;
+    font-weight: 600;
+
+    &:hover {
+      background: #147678;
+      border-color: #147678;
+    }
+  }
 
   .verifyCode {
     display: flex;

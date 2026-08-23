@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -22,10 +23,31 @@ type info struct {
 	Time  int64  `json:"time"`
 }
 
+type runtimeInfo struct {
+	Head      int64
+	Queue     int
+	UpdatedAt int64
+}
+
 var (
-	data sync.Map // map[string]*stat
-	last sync.Map
+	data         sync.Map // map[string]*stat
+	last         sync.Map
+	runtimeStats sync.Map
+	lastMu       sync.Mutex
 )
+
+func RecordRuntime(net string, head int64, queue int) {
+	runtimeStats.Store(net, runtimeInfo{Head: head, Queue: queue, UpdatedAt: time.Now().Unix()})
+}
+
+func GetNetworkRuntime(net string) (head int64, queue int, updatedAt int64, ok bool) {
+	value, ok := runtimeStats.Load(net)
+	if !ok {
+		return 0, 0, 0, false
+	}
+	item := value.(runtimeInfo)
+	return item.Head, item.Queue, item.UpdatedAt, true
+}
 
 func getStat(net string) *stat {
 	val, _ := data.LoadOrStore(net, &stat{
@@ -35,10 +57,8 @@ func getStat(net string) *stat {
 }
 
 func RecordSuccess(net, block string) {
-	last.Store(net, info{Block: block, Succ: GetSuccessRate(net), Time: time.Now().Unix()})
 	s := getStat(net)
 	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	if s.total >= maxRecords && !s.records[s.index] {
 		s.succ++
@@ -51,6 +71,19 @@ func RecordSuccess(net, block string) {
 	if s.total < maxRecords {
 		s.total++
 	}
+	s.mu.Unlock()
+	lastMu.Lock()
+	latestBlock := block
+	if value, ok := last.Load(net); ok {
+		previous := value.(info)
+		previousNumber, previousErr := strconv.ParseInt(previous.Block, 10, 64)
+		currentNumber, currentErr := strconv.ParseInt(block, 10, 64)
+		if previousErr == nil && currentErr == nil && previousNumber > currentNumber {
+			latestBlock = previous.Block
+		}
+	}
+	last.Store(net, info{Block: latestBlock, Succ: GetSuccessRate(net), Time: time.Now().Unix()})
+	lastMu.Unlock()
 }
 
 func RecordFailure(net string) {
@@ -78,6 +111,15 @@ func GetStats() map[string]info {
 	})
 
 	return m
+}
+
+func GetNetworkStat(net string) (block, success string, timestamp int64, ok bool) {
+	v, ok := last.Load(net)
+	if !ok {
+		return "", "", 0, false
+	}
+	i := v.(info)
+	return i.Block, GetSuccessRate(net), i.Time, true
 }
 
 func GetSuccessRate(net string) string {

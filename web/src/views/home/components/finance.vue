@@ -4,17 +4,16 @@
       <div>数据汇总</div>
     </div>
     <a-divider :margin="16" />
-    <a-grid class="finance-card" :cols="{ xs: 1, sm: 2, lg: 3, xl: 5 }" :col-gap="16" :row-gap="20">
-      <a-grid-item v-for="(item, index) in financeData" :key="index">
-        <a-card hoverable class="finance-a-card" :class="'animated-fade-up-' + index">
+    <a-grid class="finance-card" :cols="{ xs: 2, sm: 2, lg: 3, xl: 5 }" :col-gap="12" :row-gap="12">
+      <a-grid-item v-for="item in financeData" :key="item.id">
+        <a-card class="finance-a-card" :class="{ 'is-period': item.id === 5 }">
           <div class="finance-nav">
-            <div class="tag-dot" :style="{ border: `3px solid ${item.color}` }"></div>
             <span class="finance-nav-title">{{ item.title }}</span>
           </div>
           <div class="finance-value">{{ item.value }}</div>
-          <div class="finance-sub">
-            <span>{{ item.subLabel }}</span>
-            <span>{{ item.subValue }}</span>
+          <div class="finance-sub" :class="{ single: !item.subLabel }">
+            <span v-if="item.subLabel">{{ item.subLabel }}</span>
+            <strong>{{ item.subValue }}</strong>
           </div>
         </a-card>
       </a-grid-item>
@@ -41,41 +40,36 @@ const buildFinanceData = (data: any) => {
       id: 1,
       title: "订单总数",
       value: kpi.orders_total || 0,
-      subLabel: "已支付订单:",
-      subValue: kpi.orders_success || 0,
-      color: "#165DFF"
+      subLabel: "已支付订单",
+      subValue: kpi.orders_success || 0
     },
     {
       id: 2,
       title: "收款金额",
       value: formatAmount(kpi.gmv_paid),
-      subLabel: "支付成功率:",
-      subValue: `${formatAmount(kpi.order_success_rate)}%`,
-      color: "#14A058"
+      subLabel: "支付成功率",
+      subValue: `${formatAmount(kpi.order_success_rate)}%`
     },
     {
       id: 3,
       title: "待付订单",
       value: kpi.orders_pending || 0,
-      subLabel: "确认中订单:",
-      subValue: kpi.orders_confirming || 0,
-      color: "#F5A623"
+      subLabel: "确认中订单",
+      subValue: kpi.orders_confirming || 0
     },
     {
       id: 4,
       title: "失败订单",
       value: kpi.orders_failed || 0,
-      subLabel: "通知失败:",
-      subValue: kpi.notify_failed || 0,
-      color: "#E33E38"
+      subLabel: "通知失败",
+      subValue: kpi.notify_failed || 0
     },
     {
       id: 5,
       title: "统计周期",
       value: formatPeriod(data?.from, data?.to),
       subLabel: "",
-      subValue: data?.timezone || "--",
-      color: "#722ED1"
+      subValue: data?.timezone || "--"
     }
   ];
 };
@@ -119,27 +113,79 @@ watch(
   color: $color-text-1;
 }
 .finance-a-card {
-  min-height: 126px;
+  box-sizing: border-box;
+  height: 126px;
+  border-color: var(--console-line, #e5e6eb);
+  background: #ffffff;
+
+  :deep(.arco-card-body) {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 16px 18px 14px;
+  }
+}
+.finance-nav-title {
+  color: #6b7785;
+  font-size: 13px;
+  font-weight: 500;
 }
 .finance-value {
-  margin: 14px 0 0 16px;
+  margin: 7px 0 0;
   color: $color-text-1;
-  font-size: 24px;
-  line-height: 32px;
+  font-size: 26px;
+  line-height: 34px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   word-break: break-word;
 }
 .finance-sub {
   display: flex;
-  gap: 6px;
   align-items: center;
-  margin: 8px 0 0 16px;
-  color: $color-text-2;
-  font-size: 13px;
-  line-height: 18px;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid #f2f3f5;
+  color: #86909c;
+  font-size: 12px;
+  line-height: 17px;
   white-space: nowrap;
+
+  strong {
+    color: #4e5969;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &.single {
+    justify-content: flex-start;
+  }
 }
 .margin-left-text {
   margin-left: $margin-text;
+}
+
+@media (max-width: 768px) {
+  .finance-card :deep(.arco-grid-item:last-child) {
+    grid-column: span 2 !important;
+  }
+
+  .finance-a-card {
+    height: 118px;
+
+    :deep(.arco-card-body) {
+      padding: 14px;
+    }
+
+    &.is-period .finance-value {
+      font-size: 21px;
+    }
+  }
+
+  .finance-value {
+    font-size: 24px;
+  }
 }
 </style>

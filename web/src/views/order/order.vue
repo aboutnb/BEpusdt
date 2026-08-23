@@ -1,6 +1,12 @@
 <template>
   <div class="snow-page">
     <div class="snow-inner">
+      <div class="console-page-heading">
+        <div class="page-title-copy">
+          <h1>订单中心</h1>
+          <p>支付、链上交易与回调记录</p>
+        </div>
+      </div>
       <a-form ref="formRef" auto-label-width :model="formData.form">
         <a-row :gutter="16">
           <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="6" :xxl="6">
@@ -123,7 +129,13 @@
         <template #optional="{ record }">
           <a-space wrap>
             <a-button size="mini" type="primary" @click="showDetail(record)">详情</a-button>
-            <a-button size="mini" type="primary" status="warning" :disabled="!canManualPaid(record)" @click="showPaidModal(record)">
+            <a-button
+              size="mini"
+              type="primary"
+              status="warning"
+              :disabled="!canManualPaid(record)"
+              @click="showPaidModal(record)"
+            >
               补单
             </a-button>
           </a-space>
@@ -176,6 +188,7 @@
 import { listAPI, paidAPI, delOrderApi } from "@/api/modules/order/index";
 import { List, FormData, Pagination } from "./config";
 import { Notification } from "@arco-design/web-vue";
+import { useDevicesSize } from "@/hooks/useDevicesSize";
 import { useUserInfoStore } from "@/store/modules/user-info";
 import DetailModal from "./components/detail.vue";
 import { useOrderDetail } from "./detail";
@@ -209,6 +222,7 @@ const formData = reactive<FormData>({
   search: false
 });
 const selectedKeys = ref<string[]>([]);
+const { isMobile } = useDevicesSize();
 const orderSelection = reactive({
   type: "checkbox",
   showCheckedAll: true,
@@ -225,7 +239,7 @@ const pagination = ref<Pagination>({
   total: 10
 });
 
-const columns = [
+const columns = computed(() => [
   { title: "ID", align: "center", dataIndex: "id", width: 80 },
   { title: "商户订单", align: "center", dataIndex: "order_id", width: 220, ellipsis: true, tooltip: true },
   { title: "交易类型", align: "center", dataIndex: "trade_type", width: 120 },
@@ -235,8 +249,8 @@ const columns = [
   { title: "交易状态", dataIndex: "status", align: "center", slotName: "status", width: 100 },
   { title: "回调", dataIndex: "notify_state", align: "center", slotName: "notify_state", width: 80 },
   { title: "创建时间", dataIndex: "created_at", align: "center", width: 160 },
-  { title: "操作", slotName: "optional", align: "center", fixed: "right", width: 150 }
-];
+  { title: "操作", slotName: "optional", align: "center", fixed: isMobile.value ? undefined : ("right" as const), width: 150 }
+]);
 
 const statusMap: Record<number, { color: string; text: string }> = {
   1: { color: "blue", text: "等待支付" },

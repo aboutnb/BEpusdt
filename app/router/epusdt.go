@@ -27,4 +27,14 @@ func epusdtInit(engine *gin.Engine) {
 		payGrp.POST("/methods", epHdr.GetMethods)
 		payGrp.POST("/update-order", epHdr.UpdateOrder)
 	}
+
+	merchantGrp := engine.Group("/api/v1/merchant")
+	merchantGrp.Use(epHdr.MerchantSignVerify)
+	{
+		merchantGrp.POST("/order/create", epHdr.MerchantCreate)
+		merchantGrp.POST("/order/query", epHdr.MerchantQuery)
+		merchantGrp.POST("/capabilities", epHdr.MerchantCapabilities)
+		merchantGrp.POST("/rate", epHdr.MerchantRate)
+		merchantGrp.GET("/readiness", epHdr.MerchantReadiness)
+	}
 }

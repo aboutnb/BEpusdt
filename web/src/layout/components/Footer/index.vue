@@ -1,9 +1,7 @@
 <template>
   <a-layout-footer class="footer">
     <div class="footer_title">
-      <div class="left-placeholder"></div>
       <span @click="onBEpusdt" class="primary-copyright">{{ currentYear }} © BEpusdt. All rights reserved.</span>
-      <span class="secondary-info">Powered by SnowAdmin</span>
     </div>
   </a-layout-footer>
 </template>
@@ -29,18 +27,14 @@ const onBEpusdt = () => {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-
-  .left-placeholder {
-    flex: 1;
-  }
+  justify-content: center;
 
   .primary-copyright {
     color: $color-text-2;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    flex: 1;
+    flex: 0 1 auto;
     text-align: center;
 
     &:hover {
@@ -48,14 +42,22 @@ const onBEpusdt = () => {
       transform: translateY(-1px);
     }
   }
+}
 
-  .secondary-info {
-    color: $color-text-4;
-    font-size: 12px;
-    opacity: 0.6;
-    font-weight: 300;
-    flex: 1;
-    text-align: right;
+@media (max-width: 768px) {
+  .footer {
+    height: 32px;
+    padding: 0 12px;
+  }
+
+  .footer_title {
+    justify-content: center;
+
+    .primary-copyright {
+      flex: 0 1 auto;
+      font-size: 11px;
+      white-space: nowrap;
+    }
   }
 }
 </style>

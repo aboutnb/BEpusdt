@@ -2,6 +2,7 @@
   <div id="system-breadcrumb" class="breadcrumb" v-if="!isMobile && isBreadcrumb">
     <a-space direction="vertical">
       <a-breadcrumb>
+        <a-breadcrumb-item class="console-root">控制台</a-breadcrumb-item>
         <a-breadcrumb-item v-for="(item, index) in breadcrumb" :key="item.path" :class="transition">
           <span v-if="index === breadcrumb.length - 1" class="main_button">{{ $t(`menu.${item?.meta?.title || ""}`) }}</span>
           <span v-else class="route_button" @click="onBreadcrumb(item)">{{ $t(`menu.${item?.meta?.title || ""}`) }}</span>
@@ -64,8 +65,13 @@ const onBreadcrumb = (route: any) => {
 .breadcrumb {
   margin-left: $margin;
   overflow: auto;
+  .console-root {
+    color: $color-text-3;
+    white-space: nowrap;
+  }
   .main_button {
     color: $color-text-1;
+    font-weight: 500;
     white-space: nowrap;
     cursor: pointer;
   }

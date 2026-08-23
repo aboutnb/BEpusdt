@@ -293,13 +293,8 @@ func hasLookbackOrders(tradeType []model.TradeType) bool {
 	return count > 0
 }
 
-func getLookbackUnix(network model.Network) (startAt, endAt int64, ok bool) {
-	startAt, endAt, orderIDs, ok := pendingLookbackUnix(network)
-	if ok {
-		markLookbackDone(orderIDs)
-	}
-
-	return startAt, endAt, ok
+func getLookbackUnix(network model.Network) (startAt, endAt int64, orderIDs []int64, ok bool) {
+	return pendingLookbackUnix(network)
 }
 
 func pendingLookbackUnix(network model.Network) (startAt, endAt int64, orderIDs []int64, ok bool) {

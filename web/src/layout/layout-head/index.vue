@@ -1,5 +1,5 @@
 <template>
-  <div class="layout-head">
+  <div class="layout-head console-shell">
     <div class="layout-head-top">
       <a-layout-header class="header">
         <div class="header-logo" v-if="!isMobile">

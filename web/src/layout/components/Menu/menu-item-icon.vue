@@ -1,9 +1,12 @@
 <template>
-  <s-svg-icon v-if="props.svgIcon" :name="props.svgIcon" :size="25" />
-  <component v-else-if="props.icon" :is="props.icon"></component>
+  <component v-if="lineIcon" :is="lineIcon" class="menu-line-icon" :size="18" />
+  <component v-else-if="props.icon" :is="props.icon" class="menu-line-icon" :size="18" />
 </template>
 
 <script setup lang="ts">
+import type { Component } from "vue";
+import { IconBook, IconDashboard, IconFile, IconList, IconSettings, IconStorage, IconSwap } from "@arco-design/web-vue/es/icon";
+
 const props = defineProps({
   svgIcon: {
     type: String,
@@ -14,6 +17,24 @@ const props = defineProps({
     default: ""
   }
 });
+
+const lineIcons: Record<string, Component> = {
+  about: IconBook,
+  classify: IconStorage,
+  directives: IconSwap,
+  form: IconFile,
+  home: IconDashboard,
+  set: IconSettings,
+  table: IconList
+};
+
+const lineIcon = computed(() => lineIcons[props.svgIcon]);
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.menu-line-icon {
+  flex: 0 0 auto;
+  color: currentcolor;
+  stroke-width: 3;
+}
+</style>

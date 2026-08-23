@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -353,8 +354,18 @@ func (Epusdt) Checkout(ctx *gin.Context) {
 
 	// 收银台模板
 	tmpl := model.GetC(model.PaymentCheckout) + "/checkout.html"
+	checkoutTitle := model.GetC(model.PaymentCheckoutTitle)
+	if checkoutTitle == "" {
+		checkoutTitle = os.Getenv("BEPUSDT_CHECKOUT_TITLE")
+	}
+	if checkoutTitle == "" {
+		checkoutTitle = "加密货币收款网关"
+	}
 
-	ctx.HTML(200, tmpl, gin.H{"trade_id": tradeId})
+	ctx.HTML(200, tmpl, gin.H{
+		"trade_id":       tradeId,
+		"checkout_title": checkoutTitle,
+	})
 }
 
 func (Epusdt) GetMethods(ctx *gin.Context) {

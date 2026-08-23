@@ -134,7 +134,7 @@ func (a *aptos) lookbackVersion(ctx context.Context) {
 		return
 	}
 
-	startAt, endAt, ok := getLookbackUnix(conf.Aptos)
+	startAt, endAt, orderIDs, ok := getLookbackUnix(conf.Aptos)
 	if !ok {
 		return
 	}
@@ -156,6 +156,7 @@ func (a *aptos) lookbackVersion(ctx context.Context) {
 		a.versionQueue.In <- version{Start: i, Limit: limit}
 		time.Sleep(time.Millisecond * 200) // 速率控制
 	}
+	markLookbackDone(orderIDs)
 }
 
 func (a *aptos) versionDispatch(ctx context.Context) {

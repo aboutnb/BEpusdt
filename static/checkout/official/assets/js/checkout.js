@@ -63,7 +63,10 @@
             else el.innerHTML = tr;
         });
         try {
-            document.title = i18next.t('pageTitle');
+            var customTitle = document.querySelector('meta[name="checkout-title"]');
+            document.title = customTitle && customTitle.content
+                ? customTitle.content
+                : i18next.t('pageTitle');
             document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
         } catch (e) {}
     }

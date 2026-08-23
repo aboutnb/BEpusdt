@@ -225,6 +225,30 @@ func IsAllowedCallbackURL(raw string) bool {
 	return u.Host != ""
 }
 
+func IsAllowedCallbackURLForHosts(raw, allowCSV string) bool {
+	if !IsAllowedCallbackURL(raw) {
+		return false
+	}
+	u, _ := url.Parse(raw)
+	host := strings.ToLower(u.Hostname())
+	for _, item := range strings.Split(allowCSV, ",") {
+		allowed := strings.ToLower(strings.TrimSpace(item))
+		if allowed == "" {
+			continue
+		}
+		if host == allowed {
+			return true
+		}
+		if strings.HasPrefix(allowed, "*.") {
+			suffix := strings.TrimPrefix(allowed, "*")
+			if strings.HasSuffix(host, suffix) && host != strings.TrimPrefix(suffix, ".") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // GetRequestHost 识别完整的请求主机地址
 func GetRequestHost(r *http.Request) string {
 	scheme := "http"

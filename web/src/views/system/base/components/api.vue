@@ -34,6 +34,10 @@
             </a-select>
           </a-form-item>
 
+          <a-form-item field="payment_checkout_title" label="收银台浏览器标题" extra="留空则使用环境变量或默认标题 加密货币收款网关">
+            <a-input v-model="form.payment_checkout_title" placeholder="加密货币收款网关" allow-clear />
+          </a-form-item>
+
           <a-form-item field="payment_support_url" label="前台收银客服" extra="收银台页面跳转的客服链接地址，留空则不启用">
             <a-input v-model="form.payment_support_url" placeholder="http(s)://your-support-url" allow-clear />
           </a-form-item>
@@ -114,6 +118,7 @@ const form = ref({
   api_auth_token: "",
   api_app_uri: "",
   payment_checkout: "",
+  payment_checkout_title: "",
   payment_support_url: "",
   payment_network_sort: ""
 });
@@ -184,6 +189,7 @@ const syncFormFromConfig = () => {
   form.value.api_auth_token = data.value.api_auth_token || "";
   form.value.api_app_uri = data.value.api_app_uri || "";
   form.value.payment_checkout = normalizePaymentCheckout(data.value.payment_checkout || data.value.payment_template);
+  form.value.payment_checkout_title = data.value.payment_checkout_title || "";
   form.value.payment_support_url = data.value.payment_support_url || "";
   form.value.payment_network_sort = data.value.payment_network_sort || "";
 };
@@ -247,6 +253,10 @@ const onSubmit = async ({ errors }: ArcoDesign.ArcoSubmit) => {
     {
       key: "payment_checkout",
       value: form.value.payment_checkout
+    },
+    {
+      key: "payment_checkout_title",
+      value: form.value.payment_checkout_title
     },
     {
       key: "payment_support_url",

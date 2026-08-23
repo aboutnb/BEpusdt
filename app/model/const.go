@@ -35,8 +35,18 @@ const (
 	AdminLoginIP  ConfKey = "admin_login_ip"
 	AdminLoginAt  ConfKey = "admin_login_at"
 
-	ApiAuthToken ConfKey = "api_auth_token" // API 对接令牌
-	ApiAppUri    ConfKey = "api_app_uri"    // API 对接地址（收银台地址）
+	ApiAuthToken         ConfKey = "api_auth_token" // API 对接令牌
+	ApiAppUri            ConfKey = "api_app_uri"    // API 对接地址（收银台地址）
+	ApiHMACKeyID         ConfKey = "api_hmac_key_id"
+	ApiHMACSecret        ConfKey = "api_hmac_secret"
+	ApiNotifyHosts       ConfKey = "api_notify_hosts"
+	ApiRedirectHosts     ConfKey = "api_redirect_hosts"
+	ApiHMACClockSkew     ConfKey = "api_hmac_clock_skew"
+	ScannerMaxAgeSeconds ConfKey = "scanner_max_age_seconds"
+	ScannerMinSuccess    ConfKey = "scanner_min_success_rate"
+	ScannerMaxLagBlocks  ConfKey = "scanner_max_lag_blocks"
+	ScannerQueueMax      ConfKey = "scanner_queue_max"
+	CallbackBacklogMax   ConfKey = "callback_backlog_max"
 
 	AtomUSDT ConfKey = "atom_usdt"
 	AtomUSDC ConfKey = "atom_usdc"
@@ -45,15 +55,16 @@ const (
 	AtomETH  ConfKey = "atom_eth"
 	AtomGRAM ConfKey = "atom_gram"
 
-	MonitorMinAmount    ConfKey = "monitor_min_amount" // 监控最小金额，低于此金额的入账不进行通知
-	PaymentMinAmount    ConfKey = "payment_min_amount"
-	PaymentMaxAmount    ConfKey = "payment_max_amount"
-	PaymentTimeout      ConfKey = "payment_timeout"       // 订单支付超时时间，单位秒
-	PaymentCheckout     ConfKey = "payment_checkout"      // 收银台模板
-	PaymentMatchMode    ConfKey = "payment_match_mode"    // 订单金额匹配模式
-	PaymentSupportUrl   ConfKey = "payment_support_url"   // 订单支付客服链接
-	PaymentLookbackHour ConfKey = "payment_lookback_hour" // 订单回溯时间
-	PaymentNetworkSort  ConfKey = "payment_network_sort"  // 收银台网络顺序，逗号分隔
+	MonitorMinAmount     ConfKey = "monitor_min_amount" // 监控最小金额，低于此金额的入账不进行通知
+	PaymentMinAmount     ConfKey = "payment_min_amount"
+	PaymentMaxAmount     ConfKey = "payment_max_amount"
+	PaymentTimeout       ConfKey = "payment_timeout"        // 订单支付超时时间，单位秒
+	PaymentCheckout      ConfKey = "payment_checkout"       // 收银台模板
+	PaymentCheckoutTitle ConfKey = "payment_checkout_title" // 收银台浏览器标题
+	PaymentMatchMode     ConfKey = "payment_match_mode"     // 订单金额匹配模式
+	PaymentSupportUrl    ConfKey = "payment_support_url"    // 订单支付客服链接
+	PaymentLookbackHour  ConfKey = "payment_lookback_hour"  // 订单回溯时间
+	PaymentNetworkSort   ConfKey = "payment_network_sort"   // 收银台网络顺序，逗号分隔
 
 	RpcEndpointPlasma         ConfKey = "rpc_endpoint_plasma"            // Plasma RPC节点
 	RpcEndpointBsc            ConfKey = "rpc_endpoint_bsc"               // BSC RPC节点

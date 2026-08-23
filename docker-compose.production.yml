@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${BEPUSDT_POSTGRES_USER:-bepusdt}
+      POSTGRES_PASSWORD: ${BEPUSDT_POSTGRES_PASSWORD:?BEPUSDT_POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${BEPUSDT_POSTGRES_DB:-bepusdt}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - bepusdt_postgres_data:/var/lib/postgresql/data
+    networks:
+      - database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${BEPUSDT_POSTGRES_USER:-bepusdt} -d ${BEPUSDT_POSTGRES_DB:-bepusdt}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  bepusdt:
+    build:
+      context: .
+      dockerfile: dockerfile
+    image: ${BEPUSDT_IMAGE:-aboutnb/bepusdt:production}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${BEPUSDT_BIND_HOST:-127.0.0.1}:${BEPUSDT_PORT:-18080}:8080"
+    environment:
+      LISTEN: 0.0.0.0:8080
+      LOG: /var/log/bepusdt/
+      POSTGRESQL_DSN: ${BEPUSDT_POSTGRES_DSN:?BEPUSDT_POSTGRES_DSN is required}
+      TZ: ${TZ:-Asia/Shanghai}
+      BEPUSDT_HMAC_KEY_ID: ${BEPUSDT_HMAC_KEY_ID:?BEPUSDT_HMAC_KEY_ID is required}
+      BEPUSDT_HMAC_SECRET: ${BEPUSDT_HMAC_SECRET:?BEPUSDT_HMAC_SECRET is required}
+      BEPUSDT_NOTIFY_HOSTS: ${BEPUSDT_NOTIFY_HOSTS:?BEPUSDT_NOTIFY_HOSTS is required}
+      BEPUSDT_REDIRECT_HOSTS: ${BEPUSDT_REDIRECT_HOSTS:?BEPUSDT_REDIRECT_HOSTS is required}
+      BEPUSDT_HMAC_CLOCK_SKEW_SECONDS: ${BEPUSDT_HMAC_CLOCK_SKEW_SECONDS:-300}
+      BEPUSDT_SCANNER_MAX_AGE_SECONDS: ${BEPUSDT_SCANNER_MAX_AGE_SECONDS:-120}
+      BEPUSDT_SCANNER_MIN_SUCCESS_RATE: ${BEPUSDT_SCANNER_MIN_SUCCESS_RATE:-99}
+      BEPUSDT_SCANNER_MAX_LAG_BLOCKS: ${BEPUSDT_SCANNER_MAX_LAG_BLOCKS:-30}
+      BEPUSDT_SCANNER_QUEUE_MAX: ${BEPUSDT_SCANNER_QUEUE_MAX:-80}
+      BEPUSDT_CALLBACK_BACKLOG_MAX: ${BEPUSDT_CALLBACK_BACKLOG_MAX:-50}
+      BEPUSDT_RPC_ENDPOINT_BSC: ${BEPUSDT_RPC_ENDPOINT_BSC:?BEPUSDT_RPC_ENDPOINT_BSC is required}
+      BEPUSDT_RPC_ENDPOINT_TRON: ${BEPUSDT_RPC_ENDPOINT_TRON:-}
+    volumes:
+      - bepusdt_logs:/var/log/bepusdt
+    networks:
+      - database
+      - payment
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O /dev/null http://127.0.0.1:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+volumes:
+  bepusdt_postgres_data:
+  bepusdt_logs:
+
+networks:
+  database:
+    internal: true
+  payment:
+    name: ${PAYMENT_DOCKER_NETWORK:-payment-network}

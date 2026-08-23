@@ -115,7 +115,7 @@ func (t *tron) lookbackBlocks(ctx context.Context) {
 		return
 	}
 
-	startAt, endAt, ok := getLookbackUnix(conf.Tron)
+	startAt, endAt, orderIDs, ok := getLookbackUnix(conf.Tron)
 	if !ok {
 		return
 	}
@@ -133,6 +133,7 @@ func (t *tron) lookbackBlocks(ctx context.Context) {
 		t.blockScanQueue.In <- i
 		time.Sleep(time.Millisecond * 250) // 速率控制
 	}
+	markLookbackDone(orderIDs)
 }
 
 func (t *tron) blockDispatch(ctx context.Context) {
@@ -490,7 +491,9 @@ func (t *tron) syncBreak() bool {
 	}
 
 	var count int64 = 0
-	model.Db.Model(&model.Wallet{}).Where("other_notify = ? and trade_type in (?)", model.WaOtherEnable, trade).Count(&count)
+	// Payment scanners must stay active for enabled receiving wallets. The
+	// other_notify flag only controls non-order transfer notifications.
+	model.Db.Model(&model.Wallet{}).Where("status = ? and trade_type in (?)", model.WaStatusEnable, trade).Count(&count)
 	if count > 0 {
 
 		return false

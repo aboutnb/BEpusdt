@@ -361,6 +361,11 @@ func GetAllTradeConfig() map[string]TradeTypeConf {
 	return config
 }
 
+func GetTradeConfig(t TradeType) (TradeTypeConf, bool) {
+	c, ok := registry[t]
+	return c, ok
+}
+
 func GetNetworkTrades(n Network) []TradeType {
 	list, ok := networkTradesMap[n]
 	if !ok {
@@ -368,6 +373,25 @@ func GetNetworkTrades(n Network) []TradeType {
 	}
 
 	return list
+}
+
+func GetNetworkContracts(n Network) []string {
+	trades := GetNetworkTrades(n)
+	contracts := make([]string, 0, len(trades))
+	seen := make(map[string]struct{}, len(trades))
+	for _, trade := range trades {
+		tradeConf, ok := registry[trade]
+		if !ok || tradeConf.Native || tradeConf.Contract == "" {
+			continue
+		}
+		contract := strings.ToLower(tradeConf.Contract)
+		if _, ok := seen[contract]; ok {
+			continue
+		}
+		seen[contract] = struct{}{}
+		contracts = append(contracts, contract)
+	}
+	return contracts
 }
 
 func GetContractTrade(addr string) (TradeType, bool) {
