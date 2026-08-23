@@ -1,9 +1,6 @@
 name: docker-latest
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
   create:
     branches:
       - main
@@ -47,5 +44,4 @@ jobs:
             VERSION=${{ env.VERSION_TAG }}
           tags: |
             ${{ env.DOCKERHUB_REPO }}:latest
-            ${{ env.DOCKERHUB_REPO }}:usdt-gateway
             ${{ env.DOCKERHUB_REPO }}:${{ env.APP_VERSION }}
