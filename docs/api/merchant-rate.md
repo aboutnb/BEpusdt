@@ -15,6 +15,7 @@ the legacy `api_auth_token` used by the native cashier API.
 ```dotenv
 BEPUSDT_HMAC_KEY_ID=sub2api
 BEPUSDT_HMAC_SECRET=<long-random-shared-secret>
+BEPUSDT_API_AUTH_TOKEN=<long-random-legacy-token>
 BEPUSDT_PUBLIC_BASE_URL=https://upay.nodx.net
 BEPUSDT_NOTIFY_HOSTS=aivoza.com
 BEPUSDT_REDIRECT_HOSTS=aivoza.com
@@ -23,8 +24,8 @@ BEPUSDT_RPC_ENDPOINT_BSC=https://bsc-rpc.publicnode.com
 BEPUSDT_RPC_ENDPOINT_TRON=grpc.trongrid.io:50051
 ```
 
-The RPC values are applied to the new gateway's own database at startup. They
-do not read or migrate settings from another BEpusdt installation.
+The API token and RPC values are applied to the new gateway's own database at
+startup. They do not read or migrate settings from another BEpusdt installation.
 
 The Sub2API integration reads the current BEpusdt `USDT/CNY` quote immediately
 before each order and passes that rate back to the create endpoint, so the

@@ -261,6 +261,7 @@ func FillDefaultConf() {
 // for a fresh gateway without importing another gateway's database.
 func ApplyEnvironmentOverrides() {
 	overrides := map[ConfKey]string{
+		ApiAuthToken:            os.Getenv("BEPUSDT_API_AUTH_TOKEN"),
 		ApiAppUri:               os.Getenv("BEPUSDT_API_APP_URI"),
 		RpcEndpointBsc:          os.Getenv("BEPUSDT_RPC_ENDPOINT_BSC"),
 		RpcEndpointTron:         os.Getenv("BEPUSDT_RPC_ENDPOINT_TRON"),
