@@ -34,6 +34,9 @@ func Handler() *gin.Engine {
 	engine.Use(sessions.Sessions("session", session))
 	engine.Use(gin.LoggerWithWriter(log.GetWriter()), gin.Recovery())
 	engine.Use(sessionAuth(), copyright())
+	engine.GET("/health", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
 	engine.NoRoute(noRoute())
 	engine.GET("/", func(ctx *gin.Context) {
 		if !model.IsInstalled() {
