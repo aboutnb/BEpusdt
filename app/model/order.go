@@ -59,6 +59,7 @@ const (
 	OrderApiTypeEpusdtOrder = "epusdt_order" // epusdt create-order
 	OrderApiTypeEpay        = "epay"         // 彩虹易支付
 	OrderApiTypeAdmin       = "admin"        // 管理后台
+	OrderApiTypeMerchant    = "merchant"     // signed merchant API
 )
 
 type Order struct {
