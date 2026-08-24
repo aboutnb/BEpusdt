@@ -34,6 +34,7 @@ var Start = &cli.Command{
 		if err := model.Init(sqlite, postgres); err != nil {
 			return ctx, fmt.Errorf("数据库初始化失败 %w", err)
 		}
+		model.ApplyEnvironmentOverrides()
 
 		if err := log.Init(c.String("log")); err != nil {
 			return ctx, fmt.Errorf("日志初始化失败 %w", err)

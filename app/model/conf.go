@@ -257,6 +257,23 @@ func FillDefaultConf() {
 	}
 }
 
+// ApplyEnvironmentOverrides makes container deployment settings authoritative
+// for a fresh gateway without importing another gateway's database.
+func ApplyEnvironmentOverrides() {
+	overrides := map[ConfKey]string{
+		ApiAppUri:               os.Getenv("BEPUSDT_API_APP_URI"),
+		RpcEndpointBsc:          os.Getenv("BEPUSDT_RPC_ENDPOINT_BSC"),
+		RpcEndpointTron:         os.Getenv("BEPUSDT_RPC_ENDPOINT_TRON"),
+		RateSyncCoingeckoApiUrl: os.Getenv("BEPUSDT_RATE_SYNC_COINGECKO_API_URL"),
+		RateSyncCoingeckoApiKey: os.Getenv("BEPUSDT_RATE_SYNC_COINGECKO_API_KEY"),
+	}
+	for key, value := range overrides {
+		if value = strings.TrimSpace(value); value != "" {
+			SetK(key, value)
+		}
+	}
+}
+
 func GetLookbackHour() time.Duration {
 	var hour = time.Hour * -1
 	var num = cast.ToInt(GetC(PaymentLookbackHour))

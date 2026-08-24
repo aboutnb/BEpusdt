@@ -18,7 +18,13 @@ BEPUSDT_HMAC_SECRET=<long-random-shared-secret>
 BEPUSDT_PUBLIC_BASE_URL=https://upay.nodx.net
 BEPUSDT_NOTIFY_HOSTS=aivoza.com
 BEPUSDT_REDIRECT_HOSTS=aivoza.com
+BEPUSDT_API_APP_URI=https://upay.nodx.net
+BEPUSDT_RPC_ENDPOINT_BSC=https://bsc-rpc.publicnode.com
+BEPUSDT_RPC_ENDPOINT_TRON=grpc.trongrid.io:50051
 ```
+
+The RPC values are applied to the new gateway's own database at startup. They
+do not read or migrate settings from another BEpusdt installation.
 
 The Sub2API integration reads the current BEpusdt `USDT/CNY` quote immediately
 before each order and passes that rate back to the create endpoint, so the
